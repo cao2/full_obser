@@ -18,7 +18,12 @@ const uint16_t membus = 5;
 const uint16_t mem = 6;
 const uint16_t bus0 =7;
 const uint16_t bus1 =8;
-string blk_vector[9] = {"-", "cpu0", "cache0", "cpu1", "cache1", "membus","mem","bus0","bus1"};
+const uint16_t pwr=9;
+const uint16_t gfx=10;
+const uint16_t audio=11;
+const uint16_t usb=12;
+const uint16_t uart=13;
+string blk_vector[14] = {"-", "cpu0", "cache0", "cpu1", "cache1", "membus","mem","bus0","bus1","pwr","gfx","audio","usb","uart"};
 
 // Define commands
 typedef uint16_t command_t;
@@ -26,9 +31,10 @@ const command_t rd = 1;
 const command_t wt = 2;
 const command_t snp =3;
 const command_t wb =4;
-const command_t pwr=5;
+const command_t pwron=5;
+const command_t pwroff=6;
 
-string cmd_vector[6] = {"-", "rd", "wt", "snp", "wb","pwr"};
+string cmd_vector[7] = {"-", "rd", "wt", "snp", "wb","pwr_on","pwr_off"};
 
 // Define the ranges of memory address spaces.
 typedef uint32_t address_t;
@@ -73,7 +79,7 @@ public:
         return *this;
     }
     
-    bool operator==(const message_t& other) {
+    bool operator==(const message_t& other) const {
         return (src == other.src &&
                 dest == other.dest &&
                 cmd == other.cmd &&
@@ -81,7 +87,18 @@ public:
                 pre_cfg == other.pre_cfg &&
                 post_cfg == other.post_cfg);
     }
-    
+
+    bool operator <(const message_t &other) const {
+        if (src == other.src &&
+            dest == other.dest &&
+            cmd == other.cmd &&
+            addr == other.addr &&
+            pre_cfg == other.pre_cfg &&
+            post_cfg == other.post_cfg)
+            return false;
+        else
+            return 11*src*src*src+7*dest*dest+3*cmd*cmd<11*other.src*other.src*other.src+7*other.dest*other.dest+3*other.cmd*other.cmd;
+    }
     void insert_pre_cfg(uint32_t i) {
         pre_cfg = pre_cfg | (1 << i);
     }
