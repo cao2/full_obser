@@ -1,1 +1,1 @@
-c
+cache0:cache1:snp:1000000|cache1:cache0:snp:10011000|gfx:membus:rd:10011000|

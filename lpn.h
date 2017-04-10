@@ -11,11 +11,12 @@ class lpn_t
 {
 private:
     string name;
-    std::vector<message_t> msg_vector;
+    
     config_t init_cfg;
     uint32_t index;
 
 public:
+    std::vector<message_t> msg_vector;
     lpn_t() {}
     
     void set_flow_name(const string& n) {

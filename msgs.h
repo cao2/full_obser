@@ -20,11 +20,13 @@ private:
 public:
     msgs() {}
     
-    void parse(char *filename){
-        uint32_t srcs[42];
-        uint32_t dests[42];
-        uint32_t lengths[42];
-        uint32_t num_sigs=42;
+    void parse(std::string line){
+        
+        uint32_t srcs[50];
+        uint32_t dests[50];
+        uint32_t lengths[50];
+        uint32_t num_sigs=50;
+                       
         srcs[0]=cpu0;       dests[0]=cache0;        lengths[0]=73; //cpu_req1
         srcs[1]=cache0;     dests[1]=cpu0;          lengths[1]=73;//cpu_res1
         srcs[2]=cpu1;       dests[2]=cache1;        lengths[2]=73;//cpu_req2
@@ -79,22 +81,33 @@ public:
         srcs[40]=membus;    dests[40]=audio;        lengths[40]=32;//waddr_audio
         srcs[41]=audio;     dests[41]=membus;       lengths[41]=1;//wrsp_audio
 
+        srcs[42]=gfx;       dests[42]=membus;       lengths[42]=73;//gfx_upreq
+        srcs[43]=membus;    dests[43]=gfx;          lengths[43]=73;//gfx_upres
 
+        srcs[44]=usb;       dests[44]=membus;       lengths[44]=73;//gfx_upreq
+        srcs[45]=membus;    dests[45]=usb;          lengths[45]=73;//gfx_upres
       
-        ifstream trace_file(filename);
+        srcs[46]=uart;      dests[46]=membus;       lengths[46]=73;//gfx_upreq
+        srcs[47]=membus;    dests[47]=uart;         lengths[47]=73;//gfx_upres
+      
+        srcs[48]=audio;     dests[48]=membus;       lengths[48]=73;//gfx_upreq
+        srcs[49]=membus;    dests[49]=audio;        lengths[49]=73;//gfx_upres
+        
+        
+      
+        //ifstream trace_file(filename);
         ofstream msg_file;
         msg_file.open ("msgs.txt",ios::trunc);
-        if (trace_file.is_open()) {
-            std::string line;
+        //if (trace_file.is_open()) {
+          //  std::string line;
             message_t new_msg;
-            int pl[42];
+            int pl[50];
             int linenm=0;
             int num =0;
-            while (getline(trace_file, line)){
+            //while (getline(trace_file, line)){
                 // From each line, get the message information to create a new msg.
-                linenm++;
+                //linenm++;
                 uint32_t state=0;
-                
                 for (uint32_t i = 0; i < line.size(); i++)
                     if (line.at(i) == ',') {
                         pl[state] = i;
@@ -115,20 +128,23 @@ public:
                         new_msg.cmd = wt;
                     else
                         cout<<"cmd doesn't looks right. Error 1"<<endl;
-                    new_msg.addr = stol(tmp_str.substr(8,32));
+                    new_msg.addr = stol(tmp_str.substr(8,10));
                     //new_msg.addr=0;
-                    msg_file<<new_msg.toString()<<"\n";
+                    msg_file<<new_msg.toString()<<"|";
                     trace.push_back(new_msg);
-                    cout<<0<<": "<<new_msg.toString()<<endl;
+                    //cout<<0<<": "<<new_msg.toString()<<endl;
                     num++;
                 }
-                cout<<"pass 2"<<endl;
+                //cout<<"pass 2"<<endl;
                 for (j=1; j<num_sigs; j++) {
+                    
                     tmp_str = line.substr(pl[j-1]+1,lengths[j]);
-                    cout<<j<<":"<<tmp_str<<endl;
+                    //if (j==13)
+                      //  cout<<tmp_str<<endl;
+                    //cout<<j<<":"<<tmp_str<<endl;
                     //cout<<"start:"<<j<<":"<<tmp_str<<endl;
                     if (lengths[j]>73 )
-                        tmp_str = tmp_str.substr(3,73);
+                        tmp_str = tmp_str.substr(3);
                     if (lengths[j]>=73 && tmp_str.at(0)=='1'){
                        
                         new_msg.src = srcs[j];
@@ -145,14 +161,16 @@ public:
                             new_msg.cmd = wt;
                         else
                             cout<<"cmd doesn't looks right. Error 1"<<endl;
-                        new_msg.addr = stol(tmp_str.substr(8,32));
+                        new_msg.addr = stol(tmp_str.substr(8,10));
                         //new_msg.addr=0;
-                        msg_file<<new_msg.toString()<<"\n";
+                        msg_file<<new_msg.toString()<<"|";
                         trace.push_back(new_msg);
                         num++;
-                        cout<<j<<": "<<new_msg.toString()<<endl;
+                        //if (j==13)
+                          //  cout<<new_msg.toString()<<endl;
                     }
                     else if (lengths[j]==1 and tmp_str.at(0)=='1' and j!=6 and j!=9 and j!=12){
+                        cout<<tmp_str<<endl;
                         new_msg.src=srcs[j];
                         new_msg.dest=dests[j];
                         if (j==17 ||j==18|| j==22||j==23 ||j==27||j==28 ||j==32||j==33||j==37||j==38)
@@ -160,27 +178,29 @@ public:
                         else{
                             new_msg.cmd = wt;
                             if (j==19 ||j==23 || j==29 ||j==34 || j==39){
-                                new_msg.addr=stol(line.substr(pl[j]+1,32));
+                                new_msg.addr=stoll(line.substr(pl[j]+1,10));
                             }
                             j++;
                         }
-                        msg_file<<new_msg.toString()<<"\n";
+                        msg_file<<new_msg.toString()<<"|";
                         trace.push_back(new_msg);
                         num++;
-                        cout<<j<<": "<<new_msg.toString()<<endl;
+                        //cout<<new_msg.toString()<<endl;
                     }
                     
                 }
-            }
-            cout<<"finished"<<endl;
-            trace_file.close();
-            msg_file.close();
+                msg_file<<"\n";
+            //}
+            //cout<<"finished"<<endl;
+           // trace_file.close();
+           msg_file.close();
+        //cout<<"line finished"<<endl;
             
-        }
-        else {
-            cout << "Unable to open file" << endl;
-        }
-        cout << "Info: read " << trace.size() << " messages." << endl;
+        //}
+        //else {
+         //   cout << "Unable to open file" << endl;
+        //}
+        //cout << "Info: read " << trace.size() << " messages." << endl;
     }
     
     vector<message_t> getMsgs(){

@@ -97,7 +97,7 @@ public:
             }
             
             while (line.at(0)!='#') {
-                notend=getline(trace_file, line);
+                notend=std::getline(trace_file, line);
             }
             while (notend){
                 if(line.at(0)=='#'&&stol(line.substr(1))%clk_time==0){
